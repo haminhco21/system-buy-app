@@ -93,7 +93,6 @@ const registerUser = asyncHandler( async (req, res) => {
 
     //User exists, check if password is correct
     const passwordIsCorrect = await bcrypt.compare(password, user.password)
-
     if ( user&& passwordIsCorrect ) {
         const { _id, name, email, photo, phone, bio } = user
         res.status(200).json({
@@ -106,7 +105,6 @@ const registerUser = asyncHandler( async (req, res) => {
     })
 
     //Logout User
-
     const logout = asyncHandler(async (req, res) => {
         res.cookie("token", "", {
             path: "/",
@@ -182,10 +180,26 @@ const registerUser = asyncHandler( async (req, res) => {
             throw new Error("User not found, Please sign up ");
         }
 
+        //Validate
         if (!oldPassword || !password) {
             res.status(400);
             throw new Error("Please add new and old password ");
         }
+
+        //Save new password
+        if (user && passwordIsCorrect) {
+            user.password = password
+            await user.save()
+            res.status(200).send("Password change successful")
+        } else {
+            res.status(400);
+            throw new Error("Old password is incorrect  ")
+        }
+
+        //Check if old password matches password in DB
+        const passwordIsCorrect = await bcrypt.compare(oldPassword, user.password)
+
+        //
 
     })
 
