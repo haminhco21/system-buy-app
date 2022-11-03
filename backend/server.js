@@ -33,7 +33,7 @@ mongoose
     .connect(process.env.MONGO_URI)
     .then(() => {
         app.listen(PORT, () => {
-            console.log(`Server Runing  on PORT ${PORT}`);
+            console.log(`Chay vao tim em tren PORT ${PORT}`);
         })
     })
     .catch((err) => {

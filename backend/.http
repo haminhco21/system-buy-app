@@ -1,4 +1,22 @@
 GET http://localhost:5000
 
+
+###
+POST http://localhost:5000/api/users/register
+    email: "minhtu2005ha@gmail.com"
+    name: "Minh Tu"
+    password: "minhtu123"
+    phone: "123"
+
 ###
 POST http://localhost:5000/api/users/login
+email: "minhtu2005ha@gmail.com"
+password: "asc123"
+
+###
+GET  http://localhost:5000/api/users/logout
+
+###
+GET  http://localhost:5000/api/users/getuser
+
+

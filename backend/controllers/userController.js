@@ -2,6 +2,10 @@ const asyncHandler = require("express-async-handler");
 const User = require("../models/userModel");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
+const Token = require("../models/tokenModel");
+const crypto = require("crypto");
+const sendEmail = require("../utils/sendEmail");
+
 
 const generateToken = (id) => {
     return jwt.sign({id}, process.env.JWT_SECRET, {expiresIn: "1d"})
@@ -61,7 +65,6 @@ const registerUser = asyncHandler( async (req, res) => {
 });
 
     //Login user
-
     const loginUser = asyncHandler(async (req, res) => {
         const {email, password} = res.body;
 
@@ -203,6 +206,97 @@ const registerUser = asyncHandler( async (req, res) => {
 
     })
 
+    //Forgoted Password
+    const forgotPassword = asyncHandler (async(req, res) => {
+       const {email} = req.body // phia client gui request cho db
+       const user = await User.findOne({email})
+
+        if (!user) {
+            res.status(404)
+            throw new Error ("User does not exist")
+        }
+    
+    //Delete token if it exists in DB
+    let token = await Token.findOne({userId: user._id})
+    if (token) {
+        await token.deleteOne()
+    }
+
+    //Create Reste Token
+    let resetToken = crypto.randomBytes(30).toString("hex") + user._id 
+    
+    //Hash token before saving to DB
+    const hashedToken = crypto.createHash("sha256").update(resetToken).digest("hex")
+    
+    //Save token to db
+    await new Token({
+        userId: user._id,
+        token: hashedToken,
+        createdAt: Date.now(),
+        expiresAt: Date.now() + 30 * (60*1000), // Thirty minutes
+    }).save()
+
+    //Contruct Reset Url 
+    const resetUrl = `${process.env.FRONTEND_URL}/resetpassword/${resetToken}`
+
+    //Reset email
+    const message = `
+    <h2>Hello ${user.name}</h2>
+    <p>Làm ơn nhấp vào đường link để thay đổi mật khẩu của bạn</p>
+    <p>Link này chỉ có giá trị trong 30 phút</p>
+
+    <a href=${resetUrl} clicktracking=off >${resetUrl}</a>
+    <p>Cảm ơn</p>
+    <p>Minh Tu App</p>   
+    `;
+    const subject = "Password reset Request"
+    const send_to = user.email
+    const sent_from = process.env.EMAIL_USER
+
+    try {
+        await sendEmail(subject, message, send_to, sent_from)
+        res.status(200).json({success: true, message: "Reset Email sent"})
+    } catch (error) {
+        res.status(500)
+        throw new Error("Email not sent, please try again")
+    }
+});
+
+    //Reset Password
+    const resetPassword = asyncHandler (async (req, res) => {
+        
+        const {password} = req.body
+        const {resetToken} = req.params
+
+        //Hash token then compare to Token in DB
+        const hashedToken = crypto
+        .createHash("sha256")
+        .update(resetToken)
+        .digest("hex")
+
+        //Find token in DB
+        const userToken = await Token.findOne({
+            token: hashedToken,
+            expiresAt: {$gt: Date.now()}
+        })
+
+        if (!userToken) {
+            res.status(404);
+            throw new Error("Invalid or Expired Token");
+        }
+
+        //Find User
+        const user = await User.findOne({_id: userToken.userId})
+        user.password = password
+        await user.save()
+        res.status(200).json({
+            message: "Password reset Successful, Please Login",
+            
+        })
+
+    })
+
+
 module.exports = {
     registerUser,
     loginUser,
@@ -210,5 +304,7 @@ module.exports = {
     getUser,
     loginStatus,
     updateUser,
-    changePassword
+    changePassword,
+    forgotPassword,
+    resetPassword
 }
