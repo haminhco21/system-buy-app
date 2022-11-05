@@ -3,7 +3,7 @@ GET http://localhost:5000
 
 ###
 POST http://localhost:5000/api/users/register
-    email: "minhtu2005ha@gmail.com"
+    email: "    "
     name: "Minh Tu"
     password: "minhtu123"
     phone: "123"

@@ -1,59 +1,61 @@
-
 const mongoose = require("mongoose");
 const bcrypt = require("bcryptjs");
 
-const userSchema = mongoose.Schema({
-    name: {
+
+const userSchema = mongoose.Schema(
+    {
+      name: {
         type: String,
-        required: [true, "Please add a name!"]
-    },
-    email: {
+        required: [true, "Please add a name"],
+      },
+      email: {
         type: String,
-        required: [true, "Please add a mail!"],
+        required: [true, "Please add a email"],
         unique: true,
-        trim: true, //loai bo khang trang co trong day
+        trim: true,
         match: [
-            /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/,
-            "Please valid email!"
-        ]
-    },
-    password: {
+          /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/,
+          "Please enter a valid emaial",
+        ],
+      },
+      password: {
         type: String,
-        required: [true, "Please add a password!"],
-        minLenght: [6, "Pass phai co ki tu lon hon 6 "],
-        maxLenght: [100, "Pass phai co ki tu nho hon 100 "]
-    },
-    photo: {
+        required: [true, "Please add a password"],
+        minLength: [6, "Password must be up to 6 characters"],
+        //   maxLength: [23, "Password must not be more than 23 characters"],
+      },
+      photo: {
         type: String,
-        required: [true, "Please add a photo!"],
-        default: ""
-    },
-    phone: {
+        required: [true, "Please add a photo"],
+        default: "https://i.ibb.co/4pDNDk1/avatar.png",
+      },
+      phone: {
         type: String,
-        default: "+83"
-    },
-    bio: {
+        default: "+234",
+      },
+      bio: {
         type: String,
+        maxLength: [250, "Bio must not be more than 250 characters"],
         default: "bio",
-        maxLenght: [250, "Pass phai co ki tu nho hon 250 tu "]
+      },
+    },
+    {
+      timestamps: true,
     }
-    
-}, {
-    timestamps: true
-})
-    //Ma hoa password truoc khi cho len db
-userSchema.pre("save", async function (next) {
+  );
+  
+  //   Encrypt password before saving to DB
+  userSchema.pre("save", async function (next) {
     if (!this.isModified("password")) {
-        return next();
+      return next();
     }
-//Hash(bam) password
-    const salt = await bcrypt.genSalt(10)
-    const hashedPassword = await bcrypt.hash(this.password, salt)
-    this.password = hashedPassword
+  
+    // Hash password
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(this.password, salt);
+    this.password = hashedPassword;
     next();
-})
-
- 
-
-const User = mongoose.model("User", userSchema)
-module.exports = User
+  });
+  
+  const User = mongoose.model("User", userSchema);
+  module.exports = User;

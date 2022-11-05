@@ -7,26 +7,26 @@ const crypto = require("crypto");
 const sendEmail = require("../utils/sendEmail");
 
 
-const generateToken = (id) => {
-    return jwt.sign({id}, process.env.JWT_SECRET, {expiresIn: "1d"})
+    const generateToken = (id) => {
+    return jwt.sign({ id }, process.env.JWT_SECRET, {expiresIn: "1d" })
 }
 
     //Register Users
-const registerUser = asyncHandler( async (req, res) => {
-    const {name, email, password} = req.body;
+    const registerUser = asyncHandler( async (req, res) => {
+    const { name, email, password } = req.body;
 
 
      //Validation
         if ( !name || !email || !password ) {
             res.status(400)
-            throw new Error ("Please fill in all required fields")
+            throw new Error ("Please fill in all required fields ")
         }
         if ( password.length < 6 ) {
-            res.status(400)
+            res.status(402)
             throw new Error ("Password phai co 6 ki tu")
         }
         //Kiem tra xem email co phai la duy nhat
-       const userExists = await User.findOne({email})
+       const userExists = await User.findOne({ email })
     
        if ( userExists ) {
             res.status(400)
@@ -62,7 +62,7 @@ const registerUser = asyncHandler( async (req, res) => {
         res.status(400)
         throw new Error("Invalid user data")
        } 
-});
+    })
 
     //Login user
     const loginUser = asyncHandler(async (req, res) => {
