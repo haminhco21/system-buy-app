@@ -1,5 +1,5 @@
 .home {
-    background-color: #030b6b;
+    background: url('../../assets/1440x630-1905x834.jpg') no-repeat center center/cover;
     min-height: 100vh;
   
     & nav {
@@ -9,6 +9,10 @@
       & > .logo {
         color: #fff;
       }
+    }
+    & a {
+      justify-content: center;
+      align-items: center;
     }
   }
   .home-links {
